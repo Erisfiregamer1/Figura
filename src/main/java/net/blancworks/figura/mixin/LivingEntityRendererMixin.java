@@ -23,7 +23,14 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
 
     @Inject(method = "hasLabel", at = @At("HEAD"), cancellable = true)
     public void hasLabel(T livingEntity, CallbackInfoReturnable<Boolean> cir) {
-        if (FiguraGuiScreen.showOwnNametag || ((Boolean) Config.entries.get("ownNameTag").value && livingEntity == MinecraftClient.getInstance().player && MinecraftClient.isHudEnabled()))
+        if (FiguraGuiScreen.showOwnNametag) {
             cir.setReturnValue(true);
+        }
+        else if (!MinecraftClient.isHudEnabled()) {
+            cir.setReturnValue(false);
+        }
+        else if ((Boolean) Config.entries.get("ownNameTag").value && livingEntity == MinecraftClient.getInstance().player) {
+            cir.setReturnValue(true);
+        }
     }
 }

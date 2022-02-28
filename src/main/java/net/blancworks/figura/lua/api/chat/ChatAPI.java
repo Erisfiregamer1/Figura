@@ -6,6 +6,7 @@ import net.blancworks.figura.lua.CustomScript;
 import net.blancworks.figura.lua.api.ReadOnlyLuaTable;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.ChatHudLine;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.luaj.vm2.LuaTable;
@@ -27,8 +28,15 @@ public class ChatAPI {
                 @Override
                 public LuaValue call(LuaValue arg) {
                     //only send messages for local player
-                    if (script.playerData == PlayerDataManager.localPlayer)
-                        MinecraftClient.getInstance().player.sendChatMessage(arg.tojstring());
+                    if (script.playerData == PlayerDataManager.localPlayer) {
+                        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+
+                        if (player != null) {
+                            //trim messages to mimic vanilla behaviour
+                            String message = arg.tojstring().trim();
+                            if (!message.isEmpty()) player.sendChatMessage(message);
+                        }
+                    }
 
                     return NIL;
                 }
@@ -42,11 +50,24 @@ public class ChatAPI {
 
                     //access message
                     try {
-                        //index - 1 to keep it with lua syntax
+                        //index - 1 to keep it within lua syntax
                         return LuaValue.valueOf(chat.get(arg.checkint() - 1).getText().getString());
                     } catch (Exception ignored) {
                         return NIL;
                     }
+                }
+            });
+
+            set("setFiguraCommandPrefix", new OneArgFunction() {
+                @Override
+                public LuaValue call(LuaValue arg) {
+                    if (arg.isnil()) {
+                        script.commandPrefix = "\u0000";
+                        return NIL;
+                    }
+
+                    script.commandPrefix = arg.checkjstring();
+                    return NIL;
                 }
             });
 

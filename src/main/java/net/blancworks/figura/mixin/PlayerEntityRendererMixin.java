@@ -75,7 +75,7 @@ public abstract class PlayerEntityRendererMixin extends LivingEntityRenderer<Abs
                 figura$applyPartCustomization(VanillaModelAPI.VANILLA_LEFT_PANTS, this.getModel().leftPantLeg);
                 figura$applyPartCustomization(VanillaModelAPI.VANILLA_RIGHT_PANTS, this.getModel().rightPantLeg);
 
-                if (FiguraMod.currentData.script != null && FiguraMod.currentData.script.customShadowSize != null && FiguraMod.currentData.getTrustContainer().getBoolSetting(PlayerTrustManager.ALLOW_VANILLA_MOD_ID)) {
+                if (FiguraMod.currentData.getTrustContainer().getBoolSetting(PlayerTrustManager.ALLOW_VANILLA_MOD_ID) && FiguraMod.currentData.script != null && FiguraMod.currentData.script.customShadowSize != null) {
                     shadowRadius = FiguraMod.currentData.script.customShadowSize;
                 }
             }
@@ -142,30 +142,30 @@ public abstract class PlayerEntityRendererMixin extends LivingEntityRenderer<Abs
         String playerName = entity.getEntityName();
 
         PlayerData currentData = PlayerDataManager.getDataForPlayer(uuid);
-        if (currentData != null && !playerName.equals("") && currentData.getTrustContainer().getBoolSetting(PlayerTrustManager.ALLOW_NAMEPLATE_MOD_ID)) {
-            NamePlateCustomization nameplateData = currentData.script == null ? null : currentData.script.nameplateCustomizations.get(NamePlateAPI.ENTITY);
+        if (currentData == null || playerName.equals("") || !currentData.getTrustContainer().getBoolSetting(PlayerTrustManager.ALLOW_NAMEPLATE_MOD_ID))
+            return;
 
-            if (nameplateData == null)
-                return;
+        NamePlateCustomization nameplateData = currentData.script == null ? null : currentData.script.nameplateCustomizations.get(NamePlateAPI.ENTITY);
 
+        try {
+            if (text instanceof TranslatableText) {
+                Object[] args = ((TranslatableText) text).getArgs();
+
+                for (Object arg : args) {
+                    if (NamePlateAPI.applyFormattingRecursive((LiteralText) arg, uuid, playerName, nameplateData, currentData))
+                        break;
+                }
+            } else if (text instanceof LiteralText) {
+                NamePlateAPI.applyFormattingRecursive((LiteralText) text, uuid, playerName, nameplateData, currentData);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        if(nameplateData != null){
             if (nameplateData.enabled != null && !nameplateData.enabled) {
                 ci.cancel();
                 return;
-            }
-
-            try {
-                if (text instanceof TranslatableText) {
-                    Object[] args = ((TranslatableText) text).getArgs();
-
-                    for (Object arg : args) {
-                        if (NamePlateAPI.applyFormattingRecursive((LiteralText) arg, uuid, playerName, nameplateData, currentData))
-                            break;
-                    }
-                } else if (text instanceof LiteralText) {
-                    NamePlateAPI.applyFormattingRecursive((LiteralText) text, uuid, playerName, nameplateData, currentData);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
 
             //apply special nameplate settings
@@ -174,8 +174,7 @@ public abstract class PlayerEntityRendererMixin extends LivingEntityRenderer<Abs
             if (nameplateData.scale != null)
                 scale = nameplateData.scale;
         }
-        else return;
-
+        
         matrices.push();
         matrices.translate(translation.getX(), translation.getY(), translation.getZ());
         matrices.scale(scale.getX(), scale.getY(), scale.getZ());
