@@ -32,7 +32,7 @@ Client-Side Performance limitations.
 
 
 Easy Creation
-  - Models are simply blockbench projects. They work 1:1 with Blockbench, enabling easy comparison and creation. Animations/Particles are not yet supported.
+  - Models are simply blockbench projects. They work 1:1 with Blockbench, enabling easy comparison and creation. Particles are not yet supported.
   - Texture mapping with Models/OBJ Models match exactly as you'd expect. There's no difficult setup. If your texture maps correctly in Blockbench or whatever software you use for OBJ files, it will match in-game.
   - **All files hotswap once initially loaded, enabling extremely fast iteration time.** In layman's terms: Once you load an avatar from local files, any changes to those local files will show in-game immedaitely, without even re-starting the game. However, other people will NOT see your new until you press the upload button. Once you've pressed it, it takes 10~ seconds for the model to update for them.
 
